@@ -29,9 +29,7 @@ type KVServer struct {
 }
 
 func MakeKVServer() *KVServer {
-	kv := &KVServer{data: make(map[string]item)}
-	// Your code here.
-	return kv
+	return &KVServer{data: make(map[string]item)}
 }
 
 // Get returns the value and version for args.Key, if args.Key
@@ -65,7 +63,7 @@ func (kv *KVServer) Put(args *rpc.PutArgs, reply *rpc.PutReply) {
 
 	curr, ok := kv.data[key]
 	if !ok && version == 0 { // create new key
-		kv.data[key] = item{value, 1}
+		kv.data[key] = item{value: value, version: 1}
 		reply.Err = rpc.OK
 		return
 	}
@@ -79,7 +77,7 @@ func (kv *KVServer) Put(args *rpc.PutArgs, reply *rpc.PutReply) {
 		return
 	}
 
-	kv.data[key] = item{value, curr.version + 1}
+	kv.data[key] = item{value: value, version: curr.version + 1}
 	reply.Err = rpc.OK
 }
 
