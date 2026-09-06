@@ -28,28 +28,32 @@ func MakeLock(ck kvtest.IKVClerk, lockname string) *Lock {
 }
 
 func (lk *Lock) Acquire() {
-	value, version, _ := lk.ck.Get(lk.name)
-	for value != "" {
-		value, version, _ = lk.ck.Get(lk.name)
-	}
+	for {
+		value, version, _ := lk.ck.Get(lk.name)
+		if value != "" {
+			continue
+		}
 
-	clientID := kvtest.RandValue(8)
-	err := lk.ck.Put(lk.name, clientID, version)
-	switch err {
-	case rpc.ErrVersion:
-		lk.Acquire()
-		return
-	case rpc.ErrMaybe:
-		value, _, _ := lk.ck.Get(lk.name)
-		if value != clientID {
-			lk.Acquire()
+		clientID := kvtest.RandValue(8)
+		switch lk.ck.Put(lk.name, clientID, version) {
+		case rpc.OK:
+			// Set the clientID only after a successful acquisition.
+			// Otherwise, it might hold the clientID from one of the
+			// concurrent unsuccessful acquisition attempts
+			lk.clientID = clientID
 			return
+		case rpc.ErrMaybe:
+			if value, _, _ := lk.ck.Get(lk.name); value == clientID {
+				// Set the clientID only after a successful acquisition.
+				// Otherwise, it might hold the clientID from one of the
+				// concurrent unsuccessful acquisition attempts
+				lk.clientID = clientID
+				return
+			}
+		case rpc.ErrVersion:
+			continue
 		}
 	}
-	// Set the clientID only after a successful acquisition.
-	// Otherwise, it might hold the clientID from one of the
-	// concurrent unsuccessful acquisition attempts
-	lk.clientID = clientID
 }
 
 func (lk *Lock) Release() {
