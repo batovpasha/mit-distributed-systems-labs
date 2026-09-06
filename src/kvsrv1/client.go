@@ -39,7 +39,7 @@ func (ck *Clerk) Get(key string) (string, rpc.Tversion, rpc.Err) {
 		log.Println("Get failed, sleep for 100ms before retrying")
 		time.Sleep(100 * time.Millisecond)
 
-		reply := rpc.GetReply{}
+		reply = rpc.GetReply{}
 		ok = ck.clnt.Call(ck.server, "KVServer.Get", &args, &reply)
 	}
 
