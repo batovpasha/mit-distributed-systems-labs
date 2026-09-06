@@ -36,8 +36,8 @@ func (ck *Clerk) Get(key string) (string, rpc.Tversion, rpc.Err) {
 	ok := ck.clnt.Call(ck.server, "KVServer.Get", &args, &reply)
 
 	for !ok {
-		log.Println("Get failed, sleep for 1s before retrying")
-		time.Sleep(1 * time.Second)
+		log.Println("Get failed, sleep for 100ms before retrying")
+		time.Sleep(100 * time.Millisecond)
 
 		reply := rpc.GetReply{}
 		ok = ck.clnt.Call(ck.server, "KVServer.Get", &args, &reply)
@@ -70,8 +70,8 @@ func (ck *Clerk) Put(key, value string, version rpc.Tversion) rpc.Err {
 	retried := false
 
 	for !ok {
-		log.Println("Put failed, sleep for 1s before retrying")
-		time.Sleep(1 * time.Second)
+		log.Println("Put failed, sleep for 100ms before retrying")
+		time.Sleep(100 * time.Millisecond)
 
 		reply = rpc.PutReply{}
 		ok = ck.clnt.Call(ck.server, "KVServer.Put", &args, &reply)
